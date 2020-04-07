@@ -66,6 +66,12 @@ class SelfUser {
   SelfUser({this.username, this.group});
 }
 
+class MSGChunk {
+  String before, image, behind;
+
+  MSGChunk({this.before, this.image, this.behind});
+}
+
 // TODO Add loading functions
 class _State extends State<MainApp> {
   SocketIOManager socketManager;
@@ -76,6 +82,7 @@ class _State extends State<MainApp> {
   List<ChatMessage> messagesList = new List<ChatMessage>();
   List<Group> groupsList = new List<Group>();
   List<Emoji> emojisList = new List<Emoji>();
+  List<MSGChunk> chunks = new List<MSGChunk>();
   SelfUser selfUser;
   String token = "74e2eca66449d3ac6519f6ba05cd49df";
   bool isAuthenticated = false;
@@ -201,24 +208,40 @@ class _State extends State<MainApp> {
   _getMessage(dynamic data) {
     MessageModel message = MessageModel.fromJson(data);
     String txt = message.data.message.text;
-    String username = message.data.message.user.username;
-    String styled = message.data.message.styled;
-    int group = message.data.message.user.group;
-    String id = message.data.message.id;
+    String username;
+    int group;
+    String styled;
+    String id;
+    bool isChatMessage;
+    if (message.data.message.user != null) {
+      username = message.data.message.user.username;
+      group = message.data.message.user.group;
+      id = message.data.message.id;
+      styled = message.data.message.styled;
+      isChatMessage = true;
+    } else {
+      isChatMessage = false;
+    }
 
-    ChatMessage newmsg = new ChatMessage(
-        txt: txt,
-        username: username,
-        group: group,
-        id: id,
-        isDeleted: false,
-        styled: styled);
-    setState(() {
-      messagesList.add(newmsg);
-    });
-    _getContent(newmsg);
-    _scrollController.animateTo(_scrollController.position.maxScrollExtent + 70,
-        duration: Duration(milliseconds: 500), curve: Curves.easeOut);
+    if (isChatMessage) {
+      ChatMessage newmsg = new ChatMessage(
+          txt: txt,
+          username: username,
+          group: group,
+          id: id,
+          isDeleted: false,
+          styled: styled);
+      setState(() {
+        messagesList.add(newmsg);
+      });
+      _getContent(newmsg);
+      _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 70,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut);
+    } else {
+      print("Got non-user message.");
+    }
   }
 
   _sendMessage() async {
@@ -269,21 +292,23 @@ class _State extends State<MainApp> {
   List<Emoji> emojisInMsg;
   _getContent(ChatMessage message) {
     messageContent.clear();
+    chunks.clear();
     if (message.styled != null) {
       if (message.styled.contains("style_emoticons")) {
-        RegExp image = new RegExp(                                                  
+        RegExp image = new RegExp(
             r"(?<=https:\/\/static.nulled.to\/public\/style_emoticons\/default\/).+?(?=')");
 
         var matches = image.allMatches(message.styled);
         var typed;
 
+        // Good working Message to Emoji List Method :)
         emojisInMsg = new List<Emoji>();
         // For every match (emoji)
         for (int i = 0; i < matches.length; i++) {
           // For every Emoji in Emoji List
           for (int j = 0; j < emojisList.length; j++) {
             // Check if current Emoji is the one that matched
-            if (emojisList[j].file.toLowerCase() == matches.elementAt(i).group(0).toLowerCase()) {
+            if (emojisList[j].file == matches.elementAt(i).group(0)) {
               typed = emojisList[j].typed;
             }
           }
@@ -291,25 +316,41 @@ class _State extends State<MainApp> {
           emojisInMsg.add(
               new Emoji(typed: typed, file: matches.elementAt(i).group(0)));
         }
+
         // For every Emoji in Message
         for (int i = 0; i < emojisInMsg.length; i++) {
           Emoji e = emojisInMsg[i];
-          var chunks = message.txt.split(e.typed);
+          var chunk = message.txt.toLowerCase().split(e.typed.toLowerCase());
           var image = 'lib/assets/emojis/' + e.file;
-          if(chunks.length == 1){
-            print("needed to be modded");
-            chunks.add(" ");
-          } else {
-            print("you good");
-          }
 
-          messageContent.add(TextSpan(text: chunks[0]));
+          String before;
+          String middle = image;
+          String behind;
+          if (message.txt.endsWith(e.typed.toLowerCase()) || message.txt.endsWith(e.typed)) {
+            before = chunk[0];
+            behind = "";
+          } else if (message.txt.startsWith(e.typed)) {
+            before = "";
+            behind = chunk[1];
+          } else {
+            before = chunk[0];
+            behind = chunk[1];
+          }
+          chunks
+              .add(new MSGChunk(before: before, image: middle, behind: behind));
+        }
+        for (int j = 0; j < chunks.length; j++) {
+          String before = chunks[j].before;
+          String image = chunks[j].image;
+          String behind = chunks[j].behind;
+          print(before + "\n");
+          print(behind);
+          messageContent.add(TextSpan(text: before));
           messageContent.add(
               ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30));
-          messageContent.add(TextSpan(text: chunks[1]));
-
-          return messageContent;
+          messageContent.add(TextSpan(text: behind));
         }
+        return messageContent;
       } else {
         messageContent.add(TextSpan(text: message.txt));
         return messageContent;
