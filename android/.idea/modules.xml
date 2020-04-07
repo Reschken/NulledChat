@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/adhara_socket_io-0.4.1/android/adhara_socket_io.iml" filepath="C:/src/flutter/.pub-cache/hosted/pub.dartlang.org/adhara_socket_io-0.4.1/android/adhara_socket_io.iml" group="android/adhara_socket_io" />
+      <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" group="android" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="android/app" />
+    </modules>
+  </component>
+</project>
