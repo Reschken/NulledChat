@@ -7,4 +7,5 @@ Flutter App for the Chat on Nulled.to
 - Add Delete/Update for sent messages
 - Add Image preview for image links
 - Add Image sharing ( Uploading Image to imgur or your custom host and sending link)
+- Fix Emoji when message contains 2+ Emojis
 - ...
