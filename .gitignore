@@ -88,3 +88,6 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/flutter_build/6a0cbc50ae31552c7d73ca004e515f28/.filecache

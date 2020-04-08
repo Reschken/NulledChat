@@ -15,6 +15,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 void main() {
   runApp(new MaterialApp(
     home: new MainApp(),
+    theme: ThemeData(
+      brightness: Brightness.light,
+      primaryColor: Colors.pink,
+    ),
+    darkTheme: ThemeData(
+      brightness: Brightness.dark,
+    ),
   ));
 }
 
@@ -25,8 +32,7 @@ class MainApp extends StatefulWidget {
 
 class _scrollBehavior extends ScrollBehavior {
   @override
-  Widget buildViewportChrome(
-      BuildContext context, Widget child, AxisDirection axisDirection) {
+  Widget buildViewportChrome(BuildContext context, Widget child, AxisDirection axisDirection) {
     return child;
   }
 }
@@ -73,6 +79,14 @@ class MSGChunk {
   MSGChunk({this.before, this.image, this.behind});
 }
 
+class ChatMessageContent{
+  TextSpan before, behind;
+  ImageSpan image;
+
+
+  ChatMessageContent({this.before, this.behind, this.image});
+}
+
 // TODO Add loading functions
 class _State extends State<MainApp> {
   SocketIOManager socketManager;
@@ -81,6 +95,7 @@ class _State extends State<MainApp> {
   SocketIO socket;
   bool _isProbablyConnected = false;
   List<ChatMessage> messagesList = new List<ChatMessage>();
+  List<ChatMessageContent> contentsList = new List<ChatMessageContent>();
   List<Group> groupsList = new List<Group>();
   List<Emoji> emojisList = new List<Emoji>();
   List<MSGChunk> chunks = new List<MSGChunk>();
@@ -102,16 +117,14 @@ class _State extends State<MainApp> {
     groupsList.add(new Group(name: "Aqua", id: 91, color: Colors.indigo));
     groupsList.add(new Group(name: "Aqua", id: 90, color: Colors.lightGreen));
     groupsList.add(new Group(name: "Mod", id: 9, color: Colors.teal));
-    groupsList
-        .add(new Group(name: "Legendary", id: 38, color: Colors.amberAccent));
-    groupsList
-        .add(new Group(name: "Royal", id: 12, color: Colors.lightBlueAccent));
+    groupsList.add(new Group(name: "Legendary", id: 38, color: Colors.amberAccent));
+    groupsList.add(new Group(name: "Royal", id: 12, color: Colors.lightBlueAccent));
     groupsList.add(new Group(name: "Nova", id: 92, color: Colors.deepOrange));
     groupsList.add(new Group(name: "User", id: 3, color: Colors.grey));
     // TODO Add Rainbow effect
-    groupsList
-        .add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
+    groupsList.add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
     groupsList.add(new Group(name: "Vip", id: 7, color: Colors.pinkAccent));
+    groupsList.add(new Group(name: "Moderator", id: 6, color: Colors.teal));
   }
 
   // TODO Add Delete
@@ -189,8 +202,7 @@ class _State extends State<MainApp> {
   _getAuthenticated(dynamic data) {
     SelfuserModel user = SelfuserModel.fromJson(data);
     setState(() {
-      selfUser = new SelfUser(
-          username: user.data.user.username, group: user.data.user.group);
+      selfUser = new SelfUser(username: user.data.user.username, group: user.data.user.group);
       isAuthenticated = true;
     });
   }
@@ -198,8 +210,7 @@ class _State extends State<MainApp> {
   _getEmoji(dynamic data) {
     EmojiModel model = EmojiModel.fromJson(data);
     for (int i = 0; i < model.emojis.length; i++) {
-      emojisList.add(
-          new Emoji(file: model.emojis[i].image, typed: model.emojis[i].typed));
+      emojisList.add(new Emoji(file: model.emojis[i].image, typed: model.emojis[i].typed));
     }
     socket.emit("subscribe", [
       {"channelName": "general"}
@@ -226,20 +237,13 @@ class _State extends State<MainApp> {
 
     if (isChatMessage) {
       ChatMessage newmsg = new ChatMessage(
-          txt: txt,
-          username: username,
-          group: group,
-          id: id,
-          isDeleted: false,
-          styled: styled);
+          txt: txt, username: username, group: group, id: id, isDeleted: false, styled: styled);
       setState(() {
         messagesList.add(newmsg);
       });
       _getContent(newmsg);
-      _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 70,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.easeOut);
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent + 70,
+          duration: Duration(milliseconds: 500), curve: Curves.easeOut);
     } else {
       print("Got non-user message.");
     }
@@ -260,13 +264,12 @@ class _State extends State<MainApp> {
   _mentionUser(String user) {
     print(user);
     messageInput.text += "@" + user;
-    messageInput.selection = TextSelection.fromPosition(
-        TextPosition(offset: messageInput.text.length));
+    messageInput.selection =
+        TextSelection.fromPosition(TextPosition(offset: messageInput.text.length));
   }
 
   void _login() async {
-    String url =
-        'https://www.nulled.to/index.php?app=core&module=global&section=login';
+    String url = 'https://www.nulled.to/index.php?app=core&module=global&section=login';
     final flutterwebview = FlutterWebviewPlugin();
 
     void _loaded() {
@@ -274,8 +277,7 @@ class _State extends State<MainApp> {
       Future.then((String data) {
         socket.emit("authenticate", [
           {
-            "token":
-                "0ac4533d6bb868eec16981ec2512104a" /*data.substring(1, data.length - 1)*/
+            "token": "0ac4533d6bb868eec16981ec2512104a" /*data.substring(1, data.length - 1)*/
           }
         ]);
       });
@@ -289,11 +291,10 @@ class _State extends State<MainApp> {
         });
   }
 
-  List<InlineSpan> messageContent = [];
+
   List<Emoji> emojisInMsg;
 
   _getContent(ChatMessage message) {
-    messageContent.clear();
     chunks.clear();
     if (message.styled != null) {
       if (message.styled.contains("style_emoticons")) {
@@ -315,8 +316,7 @@ class _State extends State<MainApp> {
             }
           }
           // Add current Emoji to list with Emojis in this message
-          emojisInMsg.add(
-              new Emoji(typed: typed, file: matches.elementAt(i).group(0)));
+          emojisInMsg.add(new Emoji(typed: typed, file: matches.elementAt(i).group(0)));
         }
 
         // For every Emoji in Message
@@ -328,8 +328,7 @@ class _State extends State<MainApp> {
           String before;
           String middle = image;
           String behind;
-          if (message.txt.endsWith(e.typed.toLowerCase()) ||
-              message.txt.endsWith(e.typed)) {
+          if (message.txt.endsWith(e.typed.toLowerCase()) || message.txt.endsWith(e.typed)) {
             before = chunk[0];
             behind = "";
           } else if (message.txt.startsWith(e.typed)) {
@@ -339,29 +338,23 @@ class _State extends State<MainApp> {
             before = chunk[0];
             behind = chunk[1];
           }
-          chunks
-              .add(new MSGChunk(before: before, image: middle, behind: behind));
+          chunks.add(new MSGChunk(before: before, image: middle, behind: behind));
         }
         for (int j = 0; j < chunks.length; j++) {
           String before = chunks[j].before;
           String image = chunks[j].image;
           String behind = chunks[j].behind;
-          messageContent.add(TextSpan(text: before));
-          messageContent.add(
-              ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30));
-          messageContent.add(TextSpan(text: behind));
+
+          contentsList.add(new ChatMessageContent(before: TextSpan(text: before), behind: TextSpan(text: behind), image: ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30)));
         }
-        return messageContent;
       } else {
-        messageContent.add(TextSpan(text: message.txt));
-        return messageContent;
+        contentsList.add(new ChatMessageContent(before: TextSpan(text: message.txt)));
       }
     }
   }
 
   _getImageDialog(BuildContext context, ChatMessage message) {
-    RegExp exp =
-        new RegExp(r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+");
+    RegExp exp = new RegExp(r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+");
     var matches = exp.allMatches(message.txt);
     print(matches.elementAt(0).group(0).toString());
     if (matches.length != 0) {
@@ -369,8 +362,8 @@ class _State extends State<MainApp> {
       var url_ext = url.split('.').last;
       bool isPic;
       List<String> url_exts = ["png", "jpg", "jpeg", "gif"];
-      for(int i = 0; i <url_exts.length; i++){
-        if(url_exts[i] == url_ext){
+      for (int i = 0; i < url_exts.length; i++) {
+        if (url_exts[i] == url_ext) {
           isPic = true;
         }
       }
@@ -400,6 +393,8 @@ class _State extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
+    bool isDark = brightnessValue == Brightness.dark;
     return new Scaffold(
       resizeToAvoidBottomPadding: true,
       resizeToAvoidBottomInset: true,
@@ -442,8 +437,7 @@ class _State extends State<MainApp> {
                       top: 5.0),
                   child: new TextField(
                     controller: messageInput,
-                    decoration: new InputDecoration.collapsed(
-                        hintText: 'Send a message'),
+                    decoration: new InputDecoration.collapsed(hintText: 'Send a message'),
                   ),
                 )),
             Expanded(
@@ -455,15 +449,13 @@ class _State extends State<MainApp> {
                       right: .5,
                       top: .5),
                   child: new FlatButton.icon(
-                      onPressed: _sendMessage,
-                      icon: Icon(Icons.send),
-                      label: new Text('')),
+                      onPressed: _sendMessage, icon: Icon(Icons.send), label: new Text('')),
                 ))
           ],
         ),
         elevation: 9.0,
         shape: CircularNotchedRectangle(),
-        color: Colors.white,
+        color: isDark ? Colors.black26 : Colors.white,
         notchMargin: 8.0,
       ),
       drawer: Drawer(
@@ -487,6 +479,9 @@ class _State extends State<MainApp> {
 
   // Message Container
   Widget _msgContainer(ChatMessage message) {
+    _getContent(message);
+    final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
+    bool isDark = brightnessValue == Brightness.dark;
     // Checking for Group and assign color
     Color groupColor = Colors.grey;
     for (var i = 0; i < groupsList.length; i++) {
@@ -507,59 +502,27 @@ class _State extends State<MainApp> {
         },
         child: Container(
           decoration: new BoxDecoration(
-              color: message.isDeleted ? Colors.red[400] : Colors.white,
+              color: message.isDeleted ? Colors.red[400] : isDark ? Colors.black45 : Colors.white,
               border: new Border.all(color: groupColor),
               borderRadius: new BorderRadius.circular(10.0)),
           margin: new EdgeInsets.all(3.0),
-          padding: new EdgeInsets.only(
-              top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
+          padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
           child: new Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               new Text(
                 message.username,
-                style: new TextStyle(
-                    color: message.isDeleted ? Colors.white : groupColor),
+                style: new TextStyle(color: message.isDeleted ? Colors.white : groupColor),
               ),
               new Container(
-                child:
-                    ExtendedText.rich(TextSpan(children: _getContent(message))),
+                padding: EdgeInsets.all(2.0),
+                child: contentsList.last.image != null ? ExtendedText.rich(TextSpan(children: <InlineSpan>[contentsList.last.before, contentsList.last.image, contentsList.last.behind])) : ExtendedText.rich(TextSpan(children: <InlineSpan>[contentsList.last.before])),
               )
             ],
           ),
         ),
       );
-    } else {
-      if (message.username == selfUser.username) {
-        // Message from you
-        return new GestureDetector(
-          child: Container(
-            decoration: new BoxDecoration(
-                color: message.isDeleted ? Colors.red[400] : Colors.white,
-                border: new Border.all(color: groupColor),
-                borderRadius: new BorderRadius.circular(10.0)),
-            margin: new EdgeInsets.all(3.0),
-            padding: new EdgeInsets.only(
-                top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                new Text(
-                  message.username,
-                  style: new TextStyle(
-                      color: message.isDeleted ? Colors.white : groupColor,
-                      fontWeight: FontWeight.bold),
-                ),
-                new Text(
-                  message.txt,
-                )
-              ],
-            ),
-          ),
-        );
-      }
-    }
+    } 
   }
 }
