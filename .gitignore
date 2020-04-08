@@ -5,7 +5,7 @@ build/
 .idea/
 .vscode/
 .metadata
-
+.packages
 
 # Local configuration file (sdk path, etc)
 local.properties

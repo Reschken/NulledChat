@@ -1,5 +1,5 @@
 name: nulled
-description: Chat App for Nulled.to
+description: Chat App for Nulled.to by Muckie
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -14,7 +14,7 @@ description: Chat App for Nulled.to
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.2.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
