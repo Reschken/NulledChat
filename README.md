@@ -6,18 +6,20 @@ Flutter App for the Chat on Nulled.to ![hype](https://static.nulled.to/public/st
 ![Discord](https://img.shields.io/badge/Discord-Muckie%230001-blueviolet)
 
 ## Preview ![ez](https://static.nulled.to/public/style_emoticons/default/ezezez.png)
-![Image](https://boxing-with.rocks/2634_Q7P5YRKRI3.gif)
+![Preview](https://boxing-with.rocks/2634_Q7P5YRKRI3.gif)
+![Dark](https://boxing-with.rocks/2655_5NLT956X8M.png)
 
 ## Features ![dog](https://static.nulled.to/public/style_emoticons/default/cooldoge.gif)
 - View Images inside the App (See Preview)
 - Mention a User (Douple tap message)
 - Shows Emojis (Including animated)
+- Dark Mode
 
 ## TODO ![ok](https://static.nulled.to/public/style_emoticons/default/ok.png)
 - [ ] Fix Emoji when message contains 2+ Emojis
 - [ ] Fix Login System
 - [ ] Add Emoji picker
-- [ ] Add Dark Mode
+- [x] Add Dark Mode
 - [ ] Add Private chat for (Only for App users)
 - [ ] Add Delete/Update for sent messages
 - [x] Add Image preview for image links
