@@ -8,8 +8,9 @@ import 'messagemodel.dart';
 import 'selfUsermodel.dart';
 import 'messagehistorymodel.dart';
 import 'deletedmodel.dart';
-import 'package:html/parser.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:extended_text/extended_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 void main() {
   runApp(new MaterialApp(
@@ -84,7 +85,7 @@ class _State extends State<MainApp> {
   List<Emoji> emojisList = new List<Emoji>();
   List<MSGChunk> chunks = new List<MSGChunk>();
   SelfUser selfUser;
-  String token = "74e2eca66449d3ac6519f6ba05cd49df";
+  String token = "";
   bool isAuthenticated = false;
 
   @override
@@ -290,6 +291,7 @@ class _State extends State<MainApp> {
 
   List<InlineSpan> messageContent = [];
   List<Emoji> emojisInMsg;
+
   _getContent(ChatMessage message) {
     messageContent.clear();
     chunks.clear();
@@ -326,7 +328,8 @@ class _State extends State<MainApp> {
           String before;
           String middle = image;
           String behind;
-          if (message.txt.endsWith(e.typed.toLowerCase()) || message.txt.endsWith(e.typed)) {
+          if (message.txt.endsWith(e.typed.toLowerCase()) ||
+              message.txt.endsWith(e.typed)) {
             before = chunk[0];
             behind = "";
           } else if (message.txt.startsWith(e.typed)) {
@@ -343,8 +346,6 @@ class _State extends State<MainApp> {
           String before = chunks[j].before;
           String image = chunks[j].image;
           String behind = chunks[j].behind;
-          print(before + "\n");
-          print(behind);
           messageContent.add(TextSpan(text: before));
           messageContent.add(
               ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30));
@@ -354,6 +355,45 @@ class _State extends State<MainApp> {
       } else {
         messageContent.add(TextSpan(text: message.txt));
         return messageContent;
+      }
+    }
+  }
+
+  _getImageDialog(BuildContext context, ChatMessage message) {
+    RegExp exp =
+        new RegExp(r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+");
+    var matches = exp.allMatches(message.txt);
+    print(matches.elementAt(0).group(0).toString());
+    if (matches.length != 0) {
+      var url = matches.first.group(0).toString();
+      var url_ext = url.split('.').last;
+      bool isPic;
+      List<String> url_exts = ["png", "jpg", "jpeg", "gif"];
+      for(int i = 0; i <url_exts.length; i++){
+        if(url_exts[i] == url_ext){
+          isPic = true;
+        }
+      }
+      if (isPic == true) {
+        var image = matches.first.group(0).toString();
+        print("Image found");
+        print(image);
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return Dialog(
+              child: Container(
+                child: PhotoView(
+                  tightMode: true,
+                  imageProvider: CachedNetworkImageProvider(url),
+                  heroAttributes: const PhotoViewHeroAttributes(tag: "Image"),
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        print(message.txt + " Contains url, but no image");
       }
     }
   }
@@ -460,6 +500,10 @@ class _State extends State<MainApp> {
       return new GestureDetector(
         onDoubleTap: () {
           _mentionUser(message.username);
+        },
+        onTap: () {
+          print("Click");
+          _getImageDialog(context, message);
         },
         child: Container(
           decoration: new BoxDecoration(
