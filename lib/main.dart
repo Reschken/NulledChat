@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:adhara_socket_io/adhara_socket_io.dart';
@@ -17,18 +15,17 @@ import 'login.dart';
 
 void main() {
   runApp(new MaterialApp(
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primaryColor: Colors.pink,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (_) => MainApp(),
-        '/login': (context) => Login()
-      }));
+    theme: ThemeData(
+      brightness: Brightness.light,
+      primaryColor: Colors.pink,
+    ),
+    darkTheme: ThemeData(
+      brightness: Brightness.dark,
+    ),
+    home:
+        MainApp(), /*,
+      routes: {'/': (context) => MainApp(), '/login': (context) => Login()}*/
+  ));
 }
 
 class MainApp extends StatefulWidget {
@@ -106,7 +103,6 @@ class _State extends State<MainApp> {
   List<Emoji> emojisList = new List<Emoji>();
   List<MSGChunk> chunks = new List<MSGChunk>();
   SelfUser selfUser;
-  String token = "";
   bool isAuthenticated = false;
 
   @override
@@ -207,6 +203,10 @@ class _State extends State<MainApp> {
     }
   }
 
+  _setAuthenticate(String token) {
+    print(token);
+  }
+
   // On Authenticated
   _getAuthenticated(dynamic data) {
     SelfuserModel user = SelfuserModel.fromJson(data);
@@ -284,26 +284,6 @@ class _State extends State<MainApp> {
     messageInput.text += "@" + user;
     messageInput.selection = TextSelection.fromPosition(
         TextPosition(offset: messageInput.text.length));
-  }
-
-  _getLogin() async {
-    final flutterwebview = FlutterWebviewPlugin();
-    
-
-    void _isLogged() {
-      final Future = flutterwebview.evalJavascript("ipb.vars.session_id");
-      Future.then((String data) {
-        socket.emit("authenticate", [
-          {"token": data.substring(1, data.length - 1)}
-        ]);
-          Navigator.pop(context);
-          flutterwebview.close();
-      });
-    }    
-
-    flutterwebview.onStateChanged.listen((data) => {
-          if (data.url.toString() == "https://www.nulled.to/") {_isLogged()}
-        });    
   }
 
   List<Emoji> emojisInMsg;
@@ -414,10 +394,10 @@ class _State extends State<MainApp> {
     }
   }
 
+  Brightness brightnessValue;
   @override
   Widget build(BuildContext context) {
-    final Brightness brightnessValue =
-        MediaQuery.of(context).platformBrightness;
+    brightnessValue = MediaQuery.of(context).platformBrightness;
     bool isDark = brightnessValue == Brightness.dark;
     return new Scaffold(
       resizeToAvoidBottomPadding: true,
@@ -495,9 +475,10 @@ class _State extends State<MainApp> {
           ),
           ListTile(
             title: Text("Login"),
-            onTap: () {
-              Navigator.pushNamed(context ,'/login');
-              _getLogin();
+            onTap: () async {
+              final result = await Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Login()));
+              _setAuthenticate(result);
             },
           )
         ]),
@@ -508,8 +489,6 @@ class _State extends State<MainApp> {
   // Message Container
   Widget _msgContainer(ChatMessage message) {
     _getContent(message);
-    final Brightness brightnessValue =
-        MediaQuery.of(context).platformBrightness;
     bool isDark = brightnessValue == Brightness.dark;
     // Checking for Group and assign color
     Color groupColor = Colors.grey;
