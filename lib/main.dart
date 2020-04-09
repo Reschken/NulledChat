@@ -177,6 +177,7 @@ class _State extends State<MainApp> {
     socket.emit("emojis", [
       {"all": "all"}
     ]);
+    _tryAuthenticate();
   }
 
   _getDeleted(dynamic data) {
@@ -203,8 +204,18 @@ class _State extends State<MainApp> {
     }
   }
 
-  _setAuthenticate(String token) {
-    print(token);
+  _setAuthenticate(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(token, token);
+    _tryAuthenticate();
+  }
+
+  _tryAuthenticate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? 0;
+    socket.emit("authenticate", [
+      {"token": token}
+    ]);
   }
 
   // On Authenticated
