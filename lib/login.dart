@@ -12,7 +12,6 @@ class Login extends StatelessWidget {
       Future.then((String data) {
         var token = data.substring(1, data.length - 1);
         Navigator.pop(context, token);
-        flutterwebview.close();
       });
     }
     flutterwebview.onStateChanged.listen((data) => {
