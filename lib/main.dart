@@ -12,6 +12,7 @@ import 'deletedmodel.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_effects/flutter_text_effect.dart';
 
 void main() {
   runApp(new MaterialApp(
@@ -149,6 +150,7 @@ class _State extends State<MainApp> {
     groupsList.add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
     groupsList.add(new Group(name: "Vip", id: 7, color: Colors.pinkAccent));
     groupsList.add(new Group(name: "Moderator", id: 6, color: Colors.teal));
+    groupsList.add(new Group(name: "Contributor", id: 10, color: Colors.yellow));
   }
 
   // TODO Add Delete
@@ -569,9 +571,20 @@ class _State extends State<MainApp> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             new Container(
-              padding: EdgeInsets.all(1.0),
-              child: new Text(message.txt),
-            )
+                padding: EdgeInsets.all(1.0),
+                child: Center(
+                    child: new RainbowText(
+                  text: message.txt,
+                  colors: [
+                    Color(0xFFFF2B22),
+                    Color(0xFFFF7F22),
+                    Color(0xFFEDFF22),
+                    Color(0xFF22FF22),
+                    Color(0xFF22F4FF),
+                    Color(0xFF5400F7),
+                  ],
+                  loop: true,
+                )))
           ],
         ),
       );
