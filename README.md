@@ -14,7 +14,7 @@ Flutter App for the Chat on Nulled.to ![hype](https://static.nulled.to/public/st
 - Mention a User (Douple tap message)
 - Shows Emojis (Including animated)
 - Dark Mode
-- Login to send Messages
+- Login to send Messages (If you click "Remember me" it saves login with internal Browser, so no need to login again when you close the app. Will need to open Browser and go to Homepage if Session Expired or you opened Nulled elsewhere)
 - More to come soon :)
 
 ## TODO ![ok](https://static.nulled.to/public/style_emoticons/default/ok.png)
