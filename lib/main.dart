@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:adhara_socket_io/adhara_socket_io.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nulled/emojimodel.dart';
 import 'messagemodel.dart';
 import 'selfUsermodel.dart';
@@ -14,15 +15,39 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 void main() {
   runApp(new MaterialApp(
-    home: new MainApp(),
-    theme: ThemeData(
-      brightness: Brightness.light,
-      primaryColor: Colors.pink,
-    ),
-    darkTheme: ThemeData(
-      brightness: Brightness.dark,
-    ),
-  ));
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.pink,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      initialRoute: '/',
+      routes: {'/': (context) => MainApp(), '/login': (context) => Login()}));
+}
+
+class Login extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final flutterwebview = FlutterWebviewPlugin();
+    void _isLogged() {
+      final Future = flutterwebview.evalJavascript("ipb.vars.session_id");
+      Future.then((String data) {
+        var token = data.substring(1, data.length - 1);
+        Navigator.pop(context, token);
+      });
+    }
+
+    flutterwebview.onStateChanged.listen((data) => {
+          if (data.url.toString() == "https://www.nulled.to/") {_isLogged()}
+        });
+    return WebviewScaffold(
+      url: "https://www.nulled.to/index.php?app=core&module=global&section=login",
+      appBar: new AppBar(
+        title: new Text("Login"),
+      ),
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {
@@ -40,16 +65,25 @@ class _scrollBehavior extends ScrollBehavior {
 class ChatMessage {
   String username, txt, styled, id;
   int group;
+  int type = 0;
   bool isDeleted;
 
-  ChatMessage({
-    this.username,
-    this.txt,
-    this.group,
-    this.id,
-    this.isDeleted,
-    this.styled,
-  });
+  ChatMessage(
+      {this.username,
+      this.txt,
+      this.group,
+      this.id,
+      this.isDeleted,
+      this.styled,
+      this.type // 0 Message, 1 Error, 2 Info, 3 Broadcast
+      });
+}
+
+class ChatMessageContent {
+  TextSpan before, behind;
+  ImageSpan image;
+
+  ChatMessageContent({this.before, this.behind, this.image});
 }
 
 class Emoji {
@@ -79,28 +113,18 @@ class MSGChunk {
   MSGChunk({this.before, this.image, this.behind});
 }
 
-class ChatMessageContent{
-  TextSpan before, behind;
-  ImageSpan image;
-
-
-  ChatMessageContent({this.before, this.behind, this.image});
-}
-
 // TODO Add loading functions
 class _State extends State<MainApp> {
   SocketIOManager socketManager;
   TextEditingController messageInput;
   ScrollController _scrollController;
   SocketIO socket;
-  bool _isProbablyConnected = false;
   List<ChatMessage> messagesList = new List<ChatMessage>();
   List<ChatMessageContent> contentsList = new List<ChatMessageContent>();
   List<Group> groupsList = new List<Group>();
   List<Emoji> emojisList = new List<Emoji>();
   List<MSGChunk> chunks = new List<MSGChunk>();
   SelfUser selfUser;
-  String token = "";
   bool isAuthenticated = false;
 
   @override
@@ -129,7 +153,6 @@ class _State extends State<MainApp> {
 
   // TODO Add Delete
   initSocket() async {
-    setState(() => _isProbablyConnected = true);
     SocketIO tempSocket = await socketManager.createInstance(SocketOptions(
         "https://chat-ssl.nulled.to:443/",
         enableLogging: false,
@@ -168,7 +191,7 @@ class _State extends State<MainApp> {
   }
 
   _getConnection(dynamic data) {
-    print("Subscribing to general");
+    print("Connect");
     socket.emit("emojis", [
       {"all": "all"}
     ]);
@@ -193,9 +216,27 @@ class _State extends State<MainApp> {
             group: 3,
             id: history.data.messages[i].id,
             isDeleted: false,
-            styled: history.data.messages[i].styled));
+            styled: history.data.messages[i].styled,
+            type: 0));
       });
     }
+    _tryAuthenticate();
+  }
+
+  _setAuthenticate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+    prefs.setString("token", result);
+    print(prefs.getString("token"));
+    _tryAuthenticate();
+  }
+
+  _tryAuthenticate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? 0;
+    socket.emit("authenticate", [
+      {"token": token}
+    ]);
   }
 
   // On Authenticated
@@ -205,6 +246,7 @@ class _State extends State<MainApp> {
       selfUser = new SelfUser(username: user.data.user.username, group: user.data.user.group);
       isAuthenticated = true;
     });
+    messagesList.add(new ChatMessage(type: 1, txt: "Welcome back, " + selfUser.username));
   }
 
   _getEmoji(dynamic data) {
@@ -237,12 +279,18 @@ class _State extends State<MainApp> {
 
     if (isChatMessage) {
       ChatMessage newmsg = new ChatMessage(
-          txt: txt, username: username, group: group, id: id, isDeleted: false, styled: styled);
+          txt: txt,
+          username: username,
+          group: group,
+          id: id,
+          isDeleted: false,
+          styled: styled,
+          type: 0);
       setState(() {
         messagesList.add(newmsg);
       });
       _getContent(newmsg);
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent + 70,
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent + 80,
           duration: Duration(milliseconds: 500), curve: Curves.easeOut);
     } else {
       print("Got non-user message.");
@@ -267,30 +315,6 @@ class _State extends State<MainApp> {
     messageInput.selection =
         TextSelection.fromPosition(TextPosition(offset: messageInput.text.length));
   }
-
-  void _login() async {
-    String url = 'https://www.nulled.to/index.php?app=core&module=global&section=login';
-    final flutterwebview = FlutterWebviewPlugin();
-
-    void _loaded() {
-      final Future = flutterwebview.evalJavascript("ipb.vars.session_id");
-      Future.then((String data) {
-        socket.emit("authenticate", [
-          {
-            "token": "0ac4533d6bb868eec16981ec2512104a" /*data.substring(1, data.length - 1)*/
-          }
-        ]);
-      });
-      flutterwebview.dispose();
-      flutterwebview.close();
-    }
-
-    await flutterwebview.launch(url, hidden: true);
-    flutterwebview.onStateChanged.listen((data) => {
-          if (data.type == WebViewState.finishLoad) {_loaded()}
-        });
-  }
-
 
   List<Emoji> emojisInMsg;
 
@@ -345,7 +369,10 @@ class _State extends State<MainApp> {
           String image = chunks[j].image;
           String behind = chunks[j].behind;
 
-          contentsList.add(new ChatMessageContent(before: TextSpan(text: before), behind: TextSpan(text: behind), image: ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30)));
+          contentsList.add(new ChatMessageContent(
+              before: TextSpan(text: before),
+              behind: TextSpan(text: behind),
+              image: ImageSpan(AssetImage(image), imageHeight: 30, imageWidth: 30)));
         }
       } else {
         contentsList.add(new ChatMessageContent(before: TextSpan(text: message.txt)));
@@ -391,9 +418,11 @@ class _State extends State<MainApp> {
     }
   }
 
+  Brightness brightnessValue;
+
   @override
   Widget build(BuildContext context) {
-    final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
+    brightnessValue = MediaQuery.of(context).platformBrightness;
     bool isDark = brightnessValue == Brightness.dark;
     return new Scaffold(
       resizeToAvoidBottomPadding: true,
@@ -469,7 +498,7 @@ class _State extends State<MainApp> {
           ListTile(
             title: Text("Login"),
             onTap: () {
-              _login();
+              _setAuthenticate();
             },
           )
         ]),
@@ -480,7 +509,6 @@ class _State extends State<MainApp> {
   // Message Container
   Widget _msgContainer(ChatMessage message) {
     _getContent(message);
-    final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
     bool isDark = brightnessValue == Brightness.dark;
     // Checking for Group and assign color
     Color groupColor = Colors.grey;
@@ -489,8 +517,7 @@ class _State extends State<MainApp> {
         groupColor = groupsList[i].color;
       }
     }
-
-    if (selfUser == null) {
+    if (message.type == 0) {
       // Message from someone
       return new GestureDetector(
         onDoubleTap: () {
@@ -517,12 +544,37 @@ class _State extends State<MainApp> {
               ),
               new Container(
                 padding: EdgeInsets.all(2.0),
-                child: contentsList.last.image != null ? ExtendedText.rich(TextSpan(children: <InlineSpan>[contentsList.last.before, contentsList.last.image, contentsList.last.behind])) : ExtendedText.rich(TextSpan(children: <InlineSpan>[contentsList.last.before])),
+                child: contentsList.last.image != null
+                    ? ExtendedText.rich(TextSpan(children: <InlineSpan>[
+                        contentsList.last.before,
+                        contentsList.last.image,
+                        contentsList.last.behind
+                      ]))
+                    : ExtendedText.rich(TextSpan(children: <InlineSpan>[contentsList.last.before])),
               )
             ],
           ),
         ),
       );
-    } 
+    } else if (message.type == 1) {
+      return new Container(
+        decoration: new BoxDecoration(
+            color: isDark ? Colors.black45 : Colors.white,
+            border: new Border.all(color: Colors.black),
+            borderRadius: new BorderRadius.circular(10.0)),
+        margin: new EdgeInsets.all(3.0),
+        padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            new Container(
+              padding: EdgeInsets.all(1.0),
+              child: new Text(message.txt),
+            )
+          ],
+        ),
+      );
+    }
   }
 }
