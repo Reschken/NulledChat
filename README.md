@@ -19,12 +19,12 @@ Flutter App for the Chat on Nulled.to ![hype](https://static.nulled.to/public/st
 
 ## TODO ![ok](https://static.nulled.to/public/style_emoticons/default/ok.png)
 - [ ] Fix Emoji when message contains 2+ Emojis
-- [x] Fix Login System
+- [x] ~~Fix Login System~~
 - [ ] Add Emoji picker
-- [x] Add Dark Mode
+- [x] ~~Add Dark Mode~~
 - [ ] Add Private chat for (Only for App users)
 - [ ] Add Delete/Update for sent messages
-- [x] Add Image preview for image links
+- [x] ~~Add Image preview for image links~~
 - [ ] Add Image sharing (Uploading Image to imgur or your custom host and sending link)
 
 ## Bugs ![corona](https://static.nulled.to/public/style_emoticons/default/coronaS.png)
