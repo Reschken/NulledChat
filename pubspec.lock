@@ -118,6 +118,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.3"
+  flutter_effects:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: bf4114e3fafa829e63aab42a7ae5ae21c0e36222
+      url: "git://github.com/HitenDev/flutter_effects.git"
+    source: git
+    version: "0.0.1"
   flutter_parsed_text:
     dependency: transitive
     description:
