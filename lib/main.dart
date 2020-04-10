@@ -149,6 +149,7 @@ class _State extends State<MainApp> {
     groupsList.add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
     groupsList.add(new Group(name: "Vip", id: 7, color: Colors.pinkAccent));
     groupsList.add(new Group(name: "Moderator", id: 6, color: Colors.teal));
+    groupsList.add(new Group(name: "Contributor", id: 10, color: Colors.yellow));
   }
 
   // TODO Add Delete
