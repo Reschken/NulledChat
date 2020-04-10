@@ -119,7 +119,6 @@ class _State extends State<MainApp> {
   TextEditingController messageInput;
   ScrollController _scrollController;
   SocketIO socket;
-  bool _isProbablyConnected = false;
   List<ChatMessage> messagesList = new List<ChatMessage>();
   List<ChatMessageContent> contentsList = new List<ChatMessageContent>();
   List<Group> groupsList = new List<Group>();
@@ -154,7 +153,6 @@ class _State extends State<MainApp> {
 
   // TODO Add Delete
   initSocket() async {
-    setState(() => _isProbablyConnected = true);
     SocketIO tempSocket = await socketManager.createInstance(SocketOptions(
         "https://chat-ssl.nulled.to:443/",
         enableLogging: false,
@@ -193,11 +191,10 @@ class _State extends State<MainApp> {
   }
 
   _getConnection(dynamic data) {
-    print("Subscribing to general");
+    print("Connect");
     socket.emit("emojis", [
       {"all": "all"}
     ]);
-    //_tryAuthenticate();
   }
 
   _getDeleted(dynamic data) {
@@ -219,9 +216,11 @@ class _State extends State<MainApp> {
             group: 3,
             id: history.data.messages[i].id,
             isDeleted: false,
-            styled: history.data.messages[i].styled));
+            styled: history.data.messages[i].styled,
+            type: 0));
       });
     }
+    _tryAuthenticate();
   }
 
   _setAuthenticate() async {
@@ -243,8 +242,11 @@ class _State extends State<MainApp> {
   // On Authenticated
   _getAuthenticated(dynamic data) {
     SelfuserModel user = SelfuserModel.fromJson(data);
-    selfUser = new SelfUser(username: user.data.user.username, group: user.data.user.group);
-    isAuthenticated = true;
+    setState(() {
+      selfUser = new SelfUser(username: user.data.user.username, group: user.data.user.group);
+      isAuthenticated = true;
+    });
+    messagesList.add(new ChatMessage(type: 1, txt: "Welcome back, " + selfUser.username));
   }
 
   _getEmoji(dynamic data) {
@@ -277,7 +279,13 @@ class _State extends State<MainApp> {
 
     if (isChatMessage) {
       ChatMessage newmsg = new ChatMessage(
-          txt: txt, username: username, group: group, id: id, isDeleted: false, styled: styled);
+          txt: txt,
+          username: username,
+          group: group,
+          id: id,
+          isDeleted: false,
+          styled: styled,
+          type: 0);
       setState(() {
         messagesList.add(newmsg);
       });
@@ -411,6 +419,7 @@ class _State extends State<MainApp> {
   }
 
   Brightness brightnessValue;
+
   @override
   Widget build(BuildContext context) {
     brightnessValue = MediaQuery.of(context).platformBrightness;
@@ -508,8 +517,7 @@ class _State extends State<MainApp> {
         groupColor = groupsList[i].color;
       }
     }
-
-    if (selfUser == null) {
+    if (message.type == 0) {
       // Message from someone
       return new GestureDetector(
         onDoubleTap: () {
@@ -552,7 +560,7 @@ class _State extends State<MainApp> {
       return new Container(
         decoration: new BoxDecoration(
             color: isDark ? Colors.black45 : Colors.white,
-            border: new Border.all(color: Colors.red),
+            border: new Border.all(color: Colors.black),
             borderRadius: new BorderRadius.circular(10.0)),
         margin: new EdgeInsets.all(3.0),
         padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
