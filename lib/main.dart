@@ -139,17 +139,18 @@ class _State extends State<MainApp> {
   }
 
   initGroups() {
-    groupsList.add(new Group(name: "Aqua", id: 91, color: Colors.indigo));
+    groupsList.add(new Group(name: "Aqua", id: 91, color: Color(0xFF6991f7)));
     groupsList.add(new Group(name: "Mod", id: 9, color: Colors.teal));
     groupsList.add(new Group(name: "Legendary", id: 38, color: Colors.amberAccent));
     groupsList.add(new Group(name: "Royal", id: 12, color: Colors.lightBlueAccent));
-    groupsList.add(new Group(name: "Nova", id: 92, color: Color(0xFFd46709)));
+    groupsList.add(new Group(name: "Nova", id: 92, color: Color(0xFFff7600)));
     groupsList.add(new Group(name: "User", id: 3, color: Colors.grey));
     // TODO Add Rainbow effect
     groupsList.add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
     groupsList.add(new Group(name: "Vip", id: 7, color: Color(0xFFE140C7)));
     groupsList.add(new Group(name: "Moderator", id: 6, color: Colors.teal));
     groupsList.add(new Group(name: "Contributor", id: 10, color: Colors.yellow[500]));
+    groupsList.add(new Group(name: "Insane", id: 78, color: Color(0xFF855dff)));
   }
 
   // TODO Add Delete
@@ -435,7 +436,7 @@ class _State extends State<MainApp> {
           behavior: _scrollBehavior(),
           child: new SingleChildScrollView(
             controller: _scrollController,
-            padding: new EdgeInsets.all(16.0),
+            //padding: new EdgeInsets.all(16.0),
             child: new Container(
               child: new Column(
                 children: <Widget>[
@@ -530,10 +531,15 @@ class _State extends State<MainApp> {
         },
         child: Container(
           decoration: new BoxDecoration(
-              color: message.isDeleted ? Colors.red[400] : isDark ? Colors.black45 : Colors.white,
-              border: new Border.all(color: groupColor),
-              borderRadius: new BorderRadius.circular(10.0)),
-          margin: new EdgeInsets.all(3.0),
+            color: message.isDeleted
+                   ? Colors.red[400]
+                   : isDark
+                     ? Colors.black45
+                     : Colors.white,
+            border: new Border.all(color: Colors.black),
+            //borderRadius: new BorderRadius.circular(10.0)
+          ),
+          //margin: new EdgeInsets.all(3.0),
           padding: new EdgeInsets.only(top: 16.0, bottom: 16.0, right: 8.0, left: 8.0),
           child: new Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -545,6 +551,7 @@ class _State extends State<MainApp> {
               ),
               new Container(
                 padding: EdgeInsets.all(2.0),
+                margin: new EdgeInsets.only(top: 5.0),
                 child: contentsList.last.image != null
                     ? ExtendedText.rich(TextSpan(children: <InlineSpan>[
                         contentsList.last.before,
