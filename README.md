@@ -6,8 +6,7 @@ Flutter App for the Chat on Nulled.to ![hype](https://static.nulled.to/public/st
 ![Discord](https://img.shields.io/badge/Discord-Muckie%230001-blueviolet)
 
 ## Preview ![ez](https://static.nulled.to/public/style_emoticons/default/ezezez.png)
-![Preview](https://boxing-with.rocks/2634_Q7P5YRKRI3.gif)
-![Dark](https://boxing-with.rocks/2655_5NLT956X8M.png)
+![Preview](https://what-the.fuck-nig.ga/4515_980U2VK3QH.gif)
 
 ## Features ![dog](https://static.nulled.to/public/style_emoticons/default/cooldoge.gif)
 - View Images inside the App (See Preview)
