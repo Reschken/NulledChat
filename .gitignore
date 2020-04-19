@@ -45,3 +45,4 @@ captures/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+*.lock
