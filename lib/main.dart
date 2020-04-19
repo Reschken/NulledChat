@@ -531,11 +531,11 @@ class _State extends State<MainApp> {
         },
         child: Container(
           decoration: new BoxDecoration(
-            color: message.isDeleted
-                   ? Colors.red[400]
-                   : isDark
-                     ? Colors.black45
-                     : Colors.white,
+	          color: message.isDeleted
+	                 ? Colors.red[400]
+	                 : isDark
+	                   ? Colors.black45
+	                   : Colors.white,
             border: new Border.all(color: Colors.black),
             //borderRadius: new BorderRadius.circular(10.0)
           ),
