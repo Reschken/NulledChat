@@ -140,17 +140,16 @@ class _State extends State<MainApp> {
 
   initGroups() {
     groupsList.add(new Group(name: "Aqua", id: 91, color: Colors.indigo));
-    groupsList.add(new Group(name: "Aqua", id: 90, color: Colors.lightGreen));
     groupsList.add(new Group(name: "Mod", id: 9, color: Colors.teal));
     groupsList.add(new Group(name: "Legendary", id: 38, color: Colors.amberAccent));
     groupsList.add(new Group(name: "Royal", id: 12, color: Colors.lightBlueAccent));
-    groupsList.add(new Group(name: "Nova", id: 92, color: Colors.deepOrange));
+    groupsList.add(new Group(name: "Nova", id: 92, color: Color(0xFFd46709)));
     groupsList.add(new Group(name: "User", id: 3, color: Colors.grey));
     // TODO Add Rainbow effect
     groupsList.add(new Group(name: "Heavenly", id: 104, color: Colors.purpleAccent));
-    groupsList.add(new Group(name: "Vip", id: 7, color: Colors.pinkAccent));
+    groupsList.add(new Group(name: "Vip", id: 7, color: Color(0xFFE140C7)));
     groupsList.add(new Group(name: "Moderator", id: 6, color: Colors.teal));
-    groupsList.add(new Group(name: "Contributor", id: 10, color: Colors.yellow));
+    groupsList.add(new Group(name: "Contributor", id: 10, color: Colors.yellow[500]));
   }
 
   // TODO Add Delete
