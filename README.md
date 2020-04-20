@@ -20,6 +20,7 @@ Flutter App for the Chat on Nulled.to ![hype](https://static.nulled.to/public/st
 - [ ] Fix Emoji when message contains 2+ Emojis
 - [x] ~~Fix Login System~~
 - [ ] Add Emoji picker
+- [ ] Add Notification on Mention even if app is closed
 - [x] ~~Add Dark Mode~~
 - [ ] Add Private chat for (Only for App users)
 - [ ] Add Delete/Update for sent messages
